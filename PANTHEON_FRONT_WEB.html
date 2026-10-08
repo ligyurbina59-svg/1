@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>PANTHEON FRONT</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;touch-action:none;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#06050a;font-family:system-ui,-apple-system,sans-serif;color:#d0c8d8}
+canvas{display:block;width:100%;height:100%}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(165deg,#120e1a 0%,#06050a 50%,#0a0810 100%);z-index:10;padding:14px;overflow-y:auto}
+.screen.active{display:flex}
+.mono{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#2a1a40,#1a1028);border:1.5px solid #8a70c0;display:flex;align-items:center;justify-content:center;margin-bottom:12px;box-shadow:0 0 28px rgba(120,80,200,.35),inset 0 0 12px rgba(160,120,255,.15);font-size:22px;font-weight:800;color:#c8b0f0;letter-spacing:-1px}
+h1{color:#c8a0f0;font-size:clamp(22px,5.8vw,34px);letter-spacing:4px;text-align:center;margin-bottom:4px;text-shadow:0 0 30px rgba(160,100,255,.3)}
+h2{color:#8070a8;font-size:clamp(11px,2.8vw,14px);letter-spacing:3px;margin-bottom:12px;text-align:center}
+p{color:#685878;font-size:12px;text-align:center;max-width:94%;line-height:1.5;margin-bottom:5px}
+.btn{padding:12px 26px;margin:5px;background:rgba(45,30,70,.95);border:1px solid #8a70c0;border-radius:10px;color:#d0b8f8;font-size:13px;font-weight:600;letter-spacing:1px;min-width:160px;cursor:pointer}
+.btn:active{background:rgba(70,45,110,.95);transform:scale(.98)}
+.btn.sec{background:rgba(25,18,40,.92);border-color:#504070;color:#9888b8}
+#hud{position:absolute;top:0;left:0;right:0;padding:8px 12px;display:none;justify-content:space-between;pointer-events:none;z-index:5;font-size:11px}
+#hud .bar{height:6px;width:95px;background:#1a1425;border-radius:3px;overflow:hidden;margin-top:2px}
+#hud .bar-fill{height:100%;border-radius:3px;background:#a080e0}
+#msg{position:absolute;top:42%;width:100%;text-align:center;color:#e0c0ff;font-size:clamp(13px,3.4vw,18px);font-weight:700;opacity:0;transition:opacity .35s;text-shadow:0 2px 14px #000;pointer-events:none;z-index:6}
+#controls{position:absolute;bottom:12px;left:0;right:0;display:none;justify-content:center;gap:12px;z-index:5;pointer-events:auto}
+.ctrl{width:58px;height:58px;border-radius:50%;background:rgba(25,18,40,.94);border:1.5px solid #605088;color:#b098d8;font-size:16px;display:flex;align-items:center;justify-content:center}
+.ctrl:active,.ctrl.on{border-color:#c8a0f0;color:#f0e0ff;transform:scale(.93)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:380px;width:100%;margin:10px 0}
+.card{background:rgba(35,25,55,.92);border:1.5px solid #4a3868;border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer}
+.card:active,.card.sel{border-color:#a080e0;background:rgba(60,40,100,.5)}
+.card .n{color:#c8a0f0;font-weight:700;font-size:12px}
+.card .d{color:#685878;font-size:9px;margin-top:3px}
+.card.lock{opacity:.4;pointer-events:none}
+.tag{font-size:9px;color:#8070a8;letter-spacing:2px;margin-bottom:6px}
+.plat{font-size:10px;color:#605878;margin-top:8px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="screen-title" class="screen active">
+  <div class="mono">PF</div>
+  <div class="tag">MN24 · INDIE · HOLOGRAM IDENTITY</div>
+  <h1>PANTHEON FRONT</h1>
+  <h2>TOTAL WAR · GODS · ASH</h2>
+  <p>Trincheras · Guerras mundiales · Nuclear<br>
+  Guerreros ancestrales · Mitología griega · Dioses<br>
+  El Olimpo observa el frente total.</p>
+  <p class="plat">Android APK · Web (iOS Safari / macOS) · Portfolio indie</p>
+  <button class="btn" onclick="go('menu')">ENTRAR AL FRENTE</button>
+</div>
+
+<div id="screen-menu" class="screen">
+  <div class="mono" style="width:44px;height:44px;font-size:16px;margin-bottom:8px">PF</div>
+  <h1 style="font-size:clamp(18px,4.5vw,26px)">PANTHEON FRONT</h1>
+  <h2>Menú</h2>
+  <button class="btn" onclick="go('select')">NUEVA PARTIDA</button>
+  <button class="btn sec" onclick="go('lore')">MITO / FRENTES</button>
+  <button class="btn sec" onclick="go('how')">CÓMO JUGAR</button>
+  <button class="btn sec" onclick="go('pitch')">PARA EMPRESAS</button>
+  <button class="btn sec" onclick="go('credits')">CRÉDITOS</button>
+  <button class="btn sec" onclick="go('title')">VOLVER</button>
+</div>
+
+<div id="screen-lore" class="screen">
+  <h1>MITO / FRENTES</h1>
+  <p><b style="color:#c8a0f0">Trincheras</b> — La Gran Guerra. Barro, gas, acero.</p>
+  <p><b style="color:#c8a0f0">Guerras mundiales</b> — El siglo del fuego industrial.</p>
+  <p><b style="color:#c8a0f0">Nuclear</b> — El sol hecho arma. Invierno de ceniza.</p>
+  <p><b style="color:#c8a0f0">Guerreros ancestrales</b> — Naciones originarias y colonos: el frente olvidado.</p>
+  <p><b style="color:#c8a0f0">Grecia / dioses</b> — Ares, Atenea, Zeus: el panteón mira el total war.</p>
+  <p style="margin-top:8px;color:#8070a8">No eliges bando. Sobrevives bajo la mirada de los dioses.</p>
+  <button class="btn" onclick="go('menu')">VOLVER</button>
+</div>
+
+<div id="screen-how" class="screen">
+  <h1>CÓMO JUGAR</h1>
+  <p><b style="color:#c8a0f0">↑</b> Saltar &nbsp; <b style="color:#a080d0">↓</b> Cubrir en trinchera</p>
+  <p><b style="color:#e0c0ff">⚔</b> Ataque</p>
+  <p><b>Voluntad</b> se agota. Recoge ofrendas y suministros.</p>
+  <p>Cada frente cambia el color del caos. Llega al Olimpo en ruinas.</p>
+  <button class="btn" onclick="go('menu')">VOLVER</button>
+</div>
+
+<div id="screen-pitch" class="screen">
+  <h1>PARA EMPRESAS</h1>
+  <h2>Pitch · Contratación · Partnership</h2>
+  <p><b style="color:#c8a0f0">Producto:</b> demo jugable + identidad monograma PF</p>
+  <p><b style="color:#c8a0f0">Stack:</b> HTML5 / Canvas · APK Android · Web multiplataforma</p>
+  <p><b style="color:#c8a0f0">Objetivo:</b> atención de sellos, labs y equipos de producto</p>
+  <p><b style="color:#c8a0f0">Oferta:</b> desarrollo indie con IA · prototipos rápidos · narrativa fuerte</p>
+  <p style="color:#605878;font-size:10px;margin-top:8px">Ideal para: publishers, estudios que buscan talento IA+games, ciberseguridad narrativa, apps</p>
+  <button class="btn" onclick="go('menu')">VOLVER</button>
+</div>
+
+<div id="screen-select" class="screen">
+  <h1>FRENTES</h1>
+  <h2>Del barro al Olimpo</h2>
+  <div class="grid" id="stage-grid"></div>
+  <button class="btn" id="btnGo" onclick="startStage()" style="opacity:.4;pointer-events:none">ENTRAR</button>
+  <button class="btn sec" onclick="go('menu')">VOLVER</button>
+</div>
+
+<div id="screen-game" style="display:none">
+  <div id="hud">
+    <div>Voluntad <div class="bar"><div class="bar-fill" id="will-bar" style="width:100%"></div></div></div>
+    <div style="text-align:right">
+      <div id="stage-name" style="color:#c8a0f0;font-weight:700">—</div>
+      <div>Score <span id="score">0</span> · ⚔ <span id="kills">0</span></div>
+    </div>
+  </div>
+  <div id="msg"></div>
+  <div id="controls">
+    <div class="ctrl" id="btnD">↓</div>
+    <div class="ctrl" id="btnJ">↑</div>
+    <div class="ctrl" id="btnA">⚔</div>
+  </div>
+</div>
+
+<div id="screen-victory" class="screen">
+  <div class="mono" style="width:40px;height:40px;font-size:14px">PF</div>
+  <h1>FRENTE SUPERADO</h1>
+  <h2 id="vic-title">—</h2>
+  <p id="vic-stats">—</p>
+  <button class="btn" onclick="nextStage()">SIGUIENTE FRENTE</button>
+  <button class="btn sec" onclick="go('select')">FRENTES</button>
+  <button class="btn sec" onclick="go('menu')">MENÚ</button>
+</div>
+
+<div id="screen-gameover" class="screen">
+  <h1>CAÍDO EN EL FRENTE</h1>
+  <h2>Los dioses no intervienen</h2>
+  <p id="go-stats">—</p>
+  <button class="btn" onclick="retryStage()">REINTENTAR</button>
+  <button class="btn sec" onclick="go('select')">FRENTES</button>
+  <button class="btn sec" onclick="go('menu')">MENÚ</button>
+</div>
+
+<div id="screen-credits" class="screen">
+  <div class="mono">PF</div>
+  <h1>CRÉDITOS</h1>
+  <p style="color:#c8a0f0;margin-top:6px"><b>PANTHEON FRONT</b></p>
+  <p>Monograma · Holograma de marca · Indie IA</p>
+  <p style="margin-top:10px"><b>MN24 STUDIOS IA</b> · Mythic Gate</p>
+  <p>From Earth · Remote · Portfolio</p>
+  <p style="color:#504868;margin-top:12px;font-size:10px">Android · Web (iOS / macOS) · Desarrollo independiente con IA</p>
+  <p style="color:#403858;font-size:9px">Videojuegos · Apps · Software · Ciberseguridad (línea estudio)</p>
+  <button class="btn" onclick="go('menu')">VOLVER</button>
+</div>
+
+<script>
+const STAGES=[
+  {id:0,name:'TRINCHERAS',myth:'1914–1918',desc:'Barro y acero',goal:1650,color:'#8a7a60',bg:'#100e0c',tag:'WWI'},
+  {id:1,name:'FRENTE ANCESTRAL',myth:'NACIONES',desc:'Guerreros y colonos',goal:2150,color:'#90a060',bg:'#0c100a',tag:'ANCESTRAL'},
+  {id:2,name:'INVIERNO NUCLEAR',myth:'DÍA CERO',desc:'Ceniza y radiación',goal:2750,color:'#70a090',bg:'#0a1010',tag:'NUCLEAR'},
+  {id:3,name:'OLIMPO EN RUINAS',myth:'DIOSES',desc:'Ares observa el fin',goal:3450,color:'#c8a0f0',bg:'#100a18',tag:'OLYMPUS'}
+];
+let unlocked=[0],selected=-1,current=0;
+
+function go(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('hud').style.display='none';
+  document.getElementById('controls').style.display='none';
+  document.getElementById('screen-game').style.display='none';
+  if(n==='game'){document.getElementById('screen-game').style.display='block';document.getElementById('hud').style.display='flex';document.getElementById('controls').style.display='flex';return}
+  const el=document.getElementById('screen-'+n);if(el)el.classList.add('active');
+  if(n==='select')buildStages();
+}
+function buildStages(){
+  const g=document.getElementById('stage-grid');g.innerHTML='';
+  STAGES.forEach(s=>{
+    const lock=!unlocked.includes(s.id);
+    const c=document.createElement('div');
+    c.className='card'+(selected===s.id?' sel':'')+(lock?' lock':'');
+    c.innerHTML=`<div class="n">${lock?'🔒 ':''}${s.name}</div><div class="d">${s.myth}<br>${s.desc}</div>`;
+    if(!lock)c.onclick=()=>{selected=s.id;document.querySelectorAll('.card').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');const b=document.getElementById('btnGo');b.style.opacity=1;b.style.pointerEvents='auto'};
+    g.appendChild(c);
+  });
+}
+function startStage(){if(selected<0)return;current=selected;initGame();go('game')}
+function nextStage(){if(current<STAGES.length-1){if(!unlocked.includes(current+1))unlocked.push(current+1);selected=current+1;current=selected;initGame();go('game')}else go('credits')}
+function retryStage(){initGame();go('game')}
+
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let W,H,S,gY;
+function resize(){W=innerWidth;H=innerHeight;canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);S=Math.min(W/900,H/500);gY=H/S-70}
+addEventListener('resize',resize);resize();
+
+const G={phase:'idle',score:0,kills:0,will:100,time:0,speed:5.1,dist:0,shake:0,msgT:0};
+const P={x:115,y:0,vy:0,w:28,h:40,onGround:true,sliding:false,slideT:0,atk:false,atkT:0,inv:0};
+let obs=[],en=[],pt=[],orbs=[],bolts=[],fall=[];
+
+function showMsg(t,d=1.4){G.msgT=d;const el=document.getElementById('msg');el.textContent=t;el.style.opacity=1}
+function spawnP(x,y,col,n=8,sp=2.8){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2;pt.push({x,y,vx:Math.cos(a)*sp*(.4+Math.random()),vy:Math.sin(a)*sp*(.4+Math.random())-1.2,life:.4+Math.random()*.4,col,sz:1.5+Math.random()*2.8})}}
+
+const btn={j:0,d:0,a:0};
+function bind(id,k){const el=document.getElementById(id);if(!el)return;const dn=e=>{e.preventDefault();btn[k]=1;el.classList.add('on')};const up=()=>{btn[k]=0;el.classList.remove('on')};el.addEventListener('touchstart',dn,{passive:false});el.addEventListener('touchend',up);el.addEventListener('mousedown',dn);el.addEventListener('mouseup',up)}
+bind('btnJ','j');bind('btnD','d');bind('btnA','a');
+const keys={};addEventListener('keydown',e=>keys[e.key.toLowerCase()]=1);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
+
+function initGame(){
+  G.phase='play';G.score=0;G.kills=0;G.will=100;G.time=0;G.speed=5.1;G.dist=0;
+  P.y=0;P.vy=0;P.onGround=true;P.sliding=false;P.atk=false;P.inv=0;
+  obs=[];en=[];pt=[];orbs=[];bolts=[];
+  fall=[];for(let i=0;i<34;i++)fall.push({x:Math.random()*W/S,y:Math.random()*gY,vy:10+Math.random()*28,vx:(Math.random()-.5)*12,sz:1+Math.random()*2});
+  document.getElementById('stage-name').textContent=STAGES[current].tag+' · '+STAGES[current].name;
+  showMsg(STAGES[current].myth,1.7);
+  updateHUD();
+}
+function updateHUD(){
+  document.getElementById('score').textContent=Math.floor(G.score);
+  document.getElementById('kills').textContent=G.kills;
+  document.getElementById('will-bar').style.width=Math.max(0,G.will)+'%';
+  document.getElementById('will-bar').style.background=STAGES[current].color;
+}
+function victory(){
+  G.phase='victory';
+  if(!unlocked.includes(current+1)&&current<STAGES.length-1)unlocked.push(current+1);
+  document.getElementById('vic-title').textContent=STAGES[current].name;
+  document.getElementById('vic-stats').textContent='Score: '+Math.floor(G.score)+' · Bajas: '+G.kills;
+  setTimeout(()=>go('victory'),900);
+}
+function gameOver(){
+  G.phase='dead';
+  document.getElementById('go-stats').textContent='Score: '+Math.floor(G.score)+' · Bajas: '+G.kills;
+  setTimeout(()=>go('gameover'),700);
+}
+
+function update(dt){
+  if(G.phase!=='play')return;
+  G.time+=dt;
+  if(G.msgT>0){G.msgT-=dt;if(G.msgT<=0)document.getElementById('msg').style.opacity=0}
+  if(G.shake>0)G.shake-=dt;
+  const st=STAGES[current];
+  G.speed=5.1+Math.min(7.4,G.time*0.12)+current*0.4;
+  G.dist+=G.speed*60*dt;
+  G.score+=G.speed*5.2*dt;
+  G.will=Math.max(0,G.will-(1.9+current*0.3)*dt);
+  if(G.will<=0){gameOver();return}
+  if(G.dist>=st.goal){victory();return}
+
+  const jump=btn.j||keys[' ']||keys['arrowup']||keys['w'];
+  const slide=btn.d||keys['arrowdown']||keys['s'];
+  const atk=btn.a||keys['x']||keys['j'];
+  if(jump&&P.onGround&&!P.sliding){P.vy=-785;P.onGround=false}
+  if(slide&&P.onGround){P.sliding=true;P.slideT=0.4}
+  if(atk&&!P.atk){P.atk=true;P.atkT=0.27;bolts.push({x:P.x+30,y:P.y-10,life:0.26,hit:false})}
+
+  P.vy+=2160*dt;P.y+=P.vy*dt;
+  if(P.y>=0){P.y=0;P.vy=0;P.onGround=true}else P.onGround=false;
+  if(P.sliding){P.slideT-=dt;if(P.slideT<=0)P.sliding=false}
+  if(P.atk){P.atkT-=dt;if(P.atkT<=0)P.atk=false}
+  if(P.inv>0)P.inv-=dt;
+
+  if(Math.random()<0.028+G.time*0.0004+current*0.004){
+    const t=Math.random();
+    if(t<0.33)obs.push({x:W/S+45,y:0,w:34,h:26,type:'rubble'});
+    else if(t<0.56)obs.push({x:W/S+45,y:14,w:42,h:40,type:'trench'});
+    else if(t<0.9)en.push({x:W/S+50,y:0,w:26,h:34,hp:1,type:Math.random()<0.5?'foe':'shade',bob:Math.random()*5});
+    else orbs.push({x:W/S+40,y:-42-Math.random()*38,r:9,taken:false});
+  }
+
+  const spd=G.speed*60*dt;
+  obs.forEach(o=>o.x-=spd);
+  en.forEach(e=>{e.x-=spd*(e.type==='shade'?1.15:1.05);if(e.type==='shade')e.bob+=dt*4});
+  orbs.forEach(o=>o.x-=spd);
+  bolts.forEach(b=>{b.x+=18.5*60*dt;b.life-=dt});
+  fall.forEach(f=>{f.y+=f.vy*dt;f.x+=f.vx*dt;if(f.y>gY+10){f.y=-5;f.x=Math.random()*W/S}});
+
+  const pw=P.sliding?32:P.w,ph=P.sliding?22:P.h,py=P.sliding?11:0;
+  function hurt(n){if(P.inv>0)return;G.will-=n;P.inv=0.92;G.shake=0.22;spawnP(P.x,gY+P.y,st.color,8,2.5);if(G.will<=0)gameOver()}
+
+  obs=obs.filter(o=>{
+    if(o.x+o.w<-25)return false;
+    if(P.inv<=0&&P.x<o.x+o.w&&P.x+pw>o.x&&py<o.y+o.h&&py+ph>o.y){
+      if(o.type==='trench'&&P.sliding){G.score+=22;return true}
+      if(o.type==='rubble'&&!P.onGround&&P.y<-12)return true;
+      hurt(14);
+    }
+    return true;
+  });
+  en=en.filter(e=>{
+    if(e.x+e.w<-30)return false;
+    const ey=e.type==='shade'?-30+Math.sin(e.bob)*10:0;
+    bolts.forEach(b=>{if(!b.hit&&b.life>0&&b.x>e.x&&b.x<e.x+e.w&&Math.abs(P.y-ey)<50){e.hp=0;b.hit=true;G.score+=48;G.kills++;G.will=Math.min(100,G.will+8);spawnP(e.x,gY+ey,st.color,10,3)}});
+    if(e.hp<=0)return false;
+    if(P.inv<=0&&P.x<e.x+e.w&&P.x+pw>e.x&&py<ey+e.h&&py+ph>ey)hurt(13);
+    return true;
+  });
+  orbs=orbs.filter(o=>{
+    if(o.x<-20)return false;
+    if(!o.taken&&Math.hypot(P.x+14-o.x,(P.y-15)-o.y)<34){o.taken=true;G.score+=38;G.will=Math.min(100,G.will+16);spawnP(o.x,gY+o.y,st.color,8,2.6);showMsg(current===3?'OFRENDA':'SUMINISTRO',0.7);return false}
+    return true;
+  });
+  bolts=bolts.filter(b=>b.life>0);
+  pt=pt.filter(p=>{p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vy+=6*dt;p.life-=dt;return p.life>0});
+  updateHUD();
+}
+
+function draw(){
+  const st=STAGES[current]||STAGES[0];
+  const grd=ctx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,st.bg);grd.addColorStop(1,'#06050a');
+  ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+  if(G.phase==='idle')return;
+  ctx.save();
+  if(G.shake>0){const m=G.shake*7;ctx.translate((Math.random()-.5)*m,(Math.random()-.5)*m)}
+  ctx.scale(S,S);
+
+  // olympus glow on last stage
+  if(current===3){
+    ctx.fillStyle='rgba(180,140,255,0.08)';
+    ctx.beginPath();ctx.arc(W/S*0.75,gY*0.2,70,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(200,180,255,0.2)';
+    ctx.beginPath();ctx.arc(W/S*0.75,gY*0.2,28,0,Math.PI*2);ctx.fill();
+  }
+
+  ctx.fillStyle='rgba(40,30,55,0.7)';
+  for(let i=0;i<12;i++){
+    const px=((i*145-G.dist*0.2)%(W/S+210))-45;
+    const ph=60+(i*41)%85;
+    ctx.fillRect(px,gY-ph,14+(i%6),ph);
+  }
+
+  ctx.fillStyle='#0a0810';ctx.fillRect(0,gY,W/S+20,95);
+  ctx.fillStyle=st.color;ctx.globalAlpha=0.28;ctx.fillRect(0,gY,W/S+20,2);ctx.globalAlpha=1;
+
+  fall.forEach(f=>{
+    ctx.fillStyle=`rgba(160,140,190,${0.15+Math.random()*0.3})`;
+    ctx.fillRect(f.x,f.y,f.sz,f.sz*1.4);
+  });
+
+  orbs.forEach(o=>{ctx.fillStyle=st.color;ctx.shadowColor=st.color;ctx.shadowBlur=12;ctx.beginPath();ctx.arc(o.x,gY+o.y,o.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0});
+  obs.forEach(o=>{
+    if(o.type==='rubble'){ctx.fillStyle='#2a2030';ctx.beginPath();ctx.moveTo(o.x,gY+o.y+o.h);ctx.lineTo(o.x+o.w*.3,gY+o.y);ctx.lineTo(o.x+o.w,gY+o.y+o.h*.35);ctx.lineTo(o.x+o.w*.65,gY+o.y+o.h);ctx.fill()}
+    else{ctx.fillStyle='#221828';ctx.fillRect(o.x,gY+o.y,o.w,o.h);ctx.fillStyle=st.color;ctx.globalAlpha=0.4;ctx.fillRect(o.x+3,gY+o.y+5,o.w-6,3);ctx.globalAlpha=1}
+  });
+  en.forEach(e=>{
+    const ey=e.type==='shade'?-30+Math.sin(e.bob)*10:0;
+    ctx.fillStyle=e.type==='shade'?'#2a2040':'#2a1828';ctx.globalAlpha=e.type==='shade'?0.7:1;
+    ctx.fillRect(e.x,gY+ey,e.w,e.h);ctx.fillStyle='#c07090';
+    ctx.beginPath();ctx.arc(e.x+8,gY+ey+10,2.2,0,Math.PI*2);ctx.arc(e.x+17,gY+ey+10,2.2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  });
+
+  const px=P.x,py=gY+P.y+(P.sliding?11:0),ph=P.sliding?22:P.h;
+  const flash=P.inv>0&&Math.floor(P.inv*8)%2;
+  ctx.fillStyle='#1a1428';
+  ctx.beginPath();ctx.moveTo(px+4,py+5);ctx.quadraticCurveTo(px-12,py+15,px-4,py+ph-3);ctx.lineTo(px+8,py+ph-5);ctx.fill();
+  ctx.fillStyle=flash?'#3a3050':'#1e1830';ctx.fillRect(px,py,P.w,ph);
+  ctx.beginPath();ctx.arc(px+14,py-1,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=st.color;ctx.shadowColor=st.color;ctx.shadowBlur=7;
+  ctx.beginPath();ctx.arc(px+10,py-3,2.2,0,Math.PI*2);ctx.arc(px+18,py-3,2.2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+
+  bolts.forEach(b=>{
+    ctx.strokeStyle=st.color;ctx.lineWidth=2.3;ctx.shadowColor=st.color;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.moveTo(b.x-16,gY+P.y-5);
+    for(let i=0;i<5;i++)ctx.lineTo(b.x-8+i*7+(Math.random()-.5)*6,gY+P.y-11+(Math.random()-.5)*13);
+    ctx.stroke();ctx.shadowBlur=0;
+  });
+  pt.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/.55);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);ctx.fill()});
+  ctx.globalAlpha=1;
+
+  const prog=Math.min(1,G.dist/st.goal);
+  ctx.fillStyle='rgba(25,18,40,0.88)';ctx.fillRect(20,8,W/S-40,6);
+  ctx.fillStyle=st.color;ctx.fillRect(20,8,(W/S-40)*prog,6);
+  ctx.restore();
+}
+
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
